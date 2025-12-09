@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      max-width: 900px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container { 
+      background: white; 
+      padding: 40px; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+    }
+    h1 { 
+      color: #667eea; 
+      border-bottom: 3px solid #667eea; 
+      padding-bottom: 15px; 
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+    h2 { color: #333; margin-bottom: 15px; }
+    h3 { color: #667eea; margin-bottom: 15px; }
+    p { line-height: 1.6; margin-bottom: 10px; color: #555; }
+    
+    .question-block { 
+      margin: 30px 0; 
+      padding: 25px; 
+      background: #f9f9f9; 
+      border-left: 5px solid #667eea; 
+      border-radius: 8px;
+      display: none; 
+    }
+    .question-block.active { display: block; }
+    
+    .prompt-section {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 2px solid #e0e0e0;
+    }
+    
+    .prompt-section strong {
+      color: #667eea;
+      font-size: 16px;
+    }
+    
+    .prompt-section p {
+      margin-top: 10px;
+      font-size: 15px;
+      color: #333;
+    }
+    
+    .response-box { 
+      background: white; 
+      padding: 20px; 
+      margin: 15px 0; 
+      border-radius: 8px; 
+      border: 2px solid #e0e0e0;
+    }
+    
+    .response-label { 
+      font-weight: bold; 
+      color: #667eea; 
+      margin-bottom: 12px; 
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .response-text {
+      color: #333;
+      line-height: 1.8;
+      font-size: 15px;
+    }
+    
+    .scale-container { 
+      margin: 30px 0; 
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+    }
+    
+    .scale-container h4 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    
+    .scale-options { 
+      display: flex; 
+      justify-content: space-between; 
+      gap: 10px;
+      margin: 15px 0; 
+    }
+    
+    .scale-options label { 
+      flex: 1; 
+      text-align: center; 
+      padding: 15px 10px; 
+      background: #f0f0f0; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      font-weight: 600;
+    }
+    
+    .scale-options label:hover { 
+      background: #e8edff; 
+      border-color: #667eea;
+      transform: translateY(-2px);
+    }
+    
+    .scale-options input[type="radio"] { 
+      margin-right: 5px; 
+      cursor: pointer;
+    }
+    
+    .scale-options input[type="radio"]:checked + label,
+    .scale-options label:has(input[type="radio"]:checked) {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    
+    .scale-labels { 
+      display: flex; 
+      justify-content: space-between; 
+      font-size: 15px; 
+      color: #666; 
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    
+    @media (max-width: 600px) {
+      .scale-labels {
+        font-size: 13px;
+      }
+    }
+    
+    button { 
+      background: #667eea; 
+      color: white; 
+      border: none; 
+      padding: 14px 32px; 
+      font-size: 16px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      margin: 10px 5px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    button:hover { 
+      background: #5568d3; 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:disabled { 
+      background: #ccc; 
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .navigation { 
+      margin-top: 30px; 
+      display: flex; 
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .progress { 
+      text-align: center; 
+      margin: 20px 0; 
+      font-weight: bold; 
+      color: #667eea;
+      font-size: 18px;
+      padding: 10px;
+      background: #f0f4ff;
+      border-radius: 8px;
+    }
+    
+    .intro, .continue-choice, .thank-you { display: none; }
+    .intro.active, .continue-choice.active, .thank-you.active { display: block; }
+    
+    .error { 
+      color: #d32f2f; 
+      margin: 15px 0; 
+      padding: 12px;
+      background: #ffebee;
+      border-radius: 6px;
+      border-left: 4px solid #d32f2f;
+    }
+    
+    .success { 
+      color: #2e7d32; 
+      margin: 10px 0; 
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .intro-content {
+      background: #f0f4ff;
+      padding: 25px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    
+    .intro-content p {
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    
+    .continue-choice {
+      text-align: center;
+    }
+    
+    .continue-choice button {
+      margin: 15px 10px;
+      min-width: 180px;
+    }
+    
+    .thank-you {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .thank-you h2 {
+      color: #667eea;
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+    
+    #loading-message {
+      text-align: center;
+      padding: 40px;
+    }
+    
+    #loading-message h2 {
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+    
+    hr {
+      border: none;
+      border-top: 1px solid #e0e0e0;
+      margin: 20px 0;
+    }
+    
+    .contact-footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e0e0e0;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .contact-footer a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .contact-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 AI Model Comparison Study</h1>
+    
+    <div id="intro" class="intro active">
+      <div class="intro-content">
+        <h2>Welcome to the Model Comparison Survey!</h2>
+        <p>📊 You'll compare responses from two AI models to help us understand which produces better outputs.</p>
+        <p>✅ You'll start with <strong>3 required comparisons</strong> (takes ~5 minutes)</p>
+        <p>🎯 After that, you can optionally rate <strong>2 more comparisons</strong></p>
+        <p>🔒 The models are <strong>blinded</strong> - you won't know which is which</p>
+        <p>💡 Your honest feedback is crucial for improving AI quality!</p>
+      </div>
+      <button onclick="startSurvey()">Start Survey →</button>
+      
+      <div class="contact-footer">
+        Having trouble? Contact <a href="mailto:abell66@uic.edu">abell66@uic.edu</a>
+      </div>
+    </div>
+
+    <div id="questions-section" style="display:none;">
+      <div class="progress" id="progress"></div>
+      <div id="questions-container"></div>
+      <div class="navigation">
+        <button id="prevBtn" onclick="previousQuestion()" style="display:none;">← Previous</button>
+        <div></div>
+        <button id="nextBtn" onclick="nextQuestion()">Next →</button>
+      </div>
+      <div id="error" class="error" style="display:none;"></div>
+      
+      <div class="contact-footer">
+        Having trouble? Contact <a href="mailto:abell66@uic.edu">abell66@uic.edu</a>
+      </div>
+    </div>
+
+    <div id="continue-choice" class="continue-choice">
+      <h2>Great job! 🎉</h2>
+      <p style="font-size: 18px; margin: 20px 0;">You've completed the 3 required comparisons.</p>
+      <p style="font-size: 16px; color: #666;">Would you like to rate 2 more comparisons to help even more?</p>
+      <div>
+        <button onclick="continueToOptional()">✅ Yes, continue</button>
+        <button onclick="submitAndFinish()">📤 No, submit now</button>
+      </div>
+      
+      <div class="contact-footer">
+        Having trouble? Contact <a href="mailto:abell66@uic.edu">abell66@uic.edu</a>
+      </div>
+    </div>
+
+    <div id="thank-you" class="thank-you">
+      <h2>Thank You! 🙏</h2>
+      <p class="success">Your feedback has been submitted successfully!</p>
+      <p style="font-size: 16px; margin-top: 20px;">Your input is invaluable for improving AI models.</p>
+      <p style="font-size: 14px; color: #666; margin-top: 30px;">You can close this window now.</p>
+      
+      <div class="contact-footer">
+        Questions? Contact <a href="mailto:abell66@uic.edu">abell66@uic.edu</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var questions = [];
+    var currentQuestionIndex = 0;
+    var requiredCount = 3;
+    var responses = [];
+    var completedRequired = false;
+    var questionsLoaded = false;
+
+    // Load questions on page load
+    google.script.run
+      .withSuccessHandler(initializeSurvey)
+      .withFailureHandler(function(error) {
+        console.error('Failed to load questions:', error);
+        questionsLoaded = false;
+      })
+      .getRandomQuestions();
+
+    function initializeSurvey(data) {
+      questions = data.questions;
+      requiredCount = data.requiredCount;
+      questionsLoaded = true;
+      console.log('Loaded ' + questions.length + ' questions');
+    }
+
+    function startSurvey() {
+      if (!questionsLoaded || questions.length === 0) {
+        showError('⏳ Questions are still loading... Please wait a moment and try again.');
+        
+        // Try reloading questions
+        google.script.run
+          .withSuccessHandler(function(data) {
+            questions = data.questions;
+            requiredCount = data.requiredCount;
+            questionsLoaded = true;
+            clearError();
+            console.log('Questions reloaded successfully');
+          })
+          .withFailureHandler(function(error) {
+            showError('❌ Failed to load questions. Please refresh the page and try again.');
+          })
+          .getRandomQuestions();
+        
+        return;
+      }
+      
+      clearError();
+      document.getElementById('intro').classList.remove('active');
+      document.getElementById('questions-section').style.display = 'block';
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      var container = document.getElementById('questions-container');
+      container.innerHTML = '';
+      
+      var question = questions[currentQuestionIndex];
+      var isRequired = currentQuestionIndex < requiredCount;
+      var questionNum = currentQuestionIndex + 1;
+      
+      var html = `
+        <div class="question-block active">
+          <h3>📝 Comparison ${questionNum} of ${questions.length} ${isRequired ? '(Required)' : '(Optional)'}</h3>
+          
+          <div class="prompt-section">
+            <strong>Original Prompt:</strong>
+            <p>${escapeHtml(question.prompt)}</p>
+          </div>
+          
+          <hr>
+          
+          <div class="response-box">
+            <div class="response-label">
+              <span>👉</span> RESPONSE 1
+            </div>
+            <div class="response-text">${escapeHtml(question.response_1)}</div>
+          </div>
+          
+          <div class="response-box">
+            <div class="response-label">
+              <span>👉</span> RESPONSE 2
+            </div>
+            <div class="response-text">${escapeHtml(question.response_2)}</div>
+          </div>
+          
+          <div class="scale-container">
+            <h4>Which response is better overall?</h4>
+            <div class="scale-options">
+              <label>
+                <input type="radio" name="rating" value="1" required> 1
+              </label>
+              <label>
+                <input type="radio" name="rating" value="2" required> 2
+              </label>
+              <label>
+                <input type="radio" name="rating" value="3" required> 3
+              </label>
+              <label>
+                <input type="radio" name="rating" value="4" required> 4
+              </label>
+              <label>
+                <input type="radio" name="rating" value="5" required> 5
+              </label>
+            </div>
+            <div class="scale-labels">
+              <span>← Response 1 Much Better</span>
+              <span>About Equal</span>
+              <span>Response 2 Much Better →</span>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+      updateProgress();
+      updateNavigationButtons();
+      
+      // Restore previous rating if exists
+      if (responses[currentQuestionIndex]) {
+        var rating = responses[currentQuestionIndex].rating;
+        var radio = document.querySelector('input[name="rating"][value="' + rating + '"]');
+        if (radio) radio.checked = true;
+      }
+    }
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function updateProgress() {
+      var completed = Object.keys(responses).length;
+      document.getElementById('progress').textContent = 
+        `Question ${currentQuestionIndex + 1} of ${questions.length} (${completed} completed)`;
+    }
+
+    function updateNavigationButtons() {
+      var prevBtn = document.getElementById('prevBtn');
+      var nextBtn = document.getElementById('nextBtn');
+      
+      prevBtn.style.display = currentQuestionIndex > 0 ? 'block' : 'none';
+      
+      if (currentQuestionIndex === requiredCount - 1 && !completedRequired) {
+        nextBtn.textContent = 'Complete Required →';
+      } else if (currentQuestionIndex === questions.length - 1) {
+        nextBtn.textContent = '📤 Submit';
+      } else {
+        nextBtn.textContent = 'Next →';
+      }
+    }
+
+    function nextQuestion() {
+      var rating = document.querySelector('input[name="rating"]:checked');
+      
+      if (!rating) {
+        showError('⚠️ Please select a rating before continuing.');
+        return;
+      }
+      
+      var question = questions[currentQuestionIndex];
+      
+      // Save the response
+      responses[currentQuestionIndex] = {
+        questionIndex: currentQuestionIndex,
+        prompt: question.prompt,
+        response_1: question.response_1,
+        response_2: question.response_2,
+        response_1_type: question.response_1_type,
+        response_2_type: question.response_2_type,
+        rating: parseInt(rating.value),
+        completedAll: false
+      };
+      
+      clearError();
+      
+      // Check if we just completed required questions
+      if (currentQuestionIndex === requiredCount - 1 && !completedRequired) {
+        completedRequired = true;
+        showContinueChoice();
+        return;
+      }
+      
+      // Check if this is the last question
+      if (currentQuestionIndex === questions.length - 1) {
+        submitAllResponses(true);
+        return;
+      }
+      
+      // Move to next question
+      currentQuestionIndex++;
+      renderQuestion();
+    }
+
+    function previousQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderQuestion();
+      }
+    }
+
+    function showContinueChoice() {
+      document.getElementById('questions-section').style.display = 'none';
+      document.getElementById('continue-choice').classList.add('active');
+    }
+
+    function continueToOptional() {
+      document.getElementById('continue-choice').classList.remove('active');
+      document.getElementById('questions-section').style.display = 'block';
+      currentQuestionIndex++;
+      renderQuestion();
+    }
+
+    function submitAndFinish() {
+      submitAllResponses(false);
+    }
+
+    function submitAllResponses(completedAll) {
+      // Mark all responses with completion status
+      for (var i = 0; i < responses.length; i++) {
+        if (responses[i]) {
+          responses[i].completedAll = completedAll;
+        }
+      }
+      
+      // Filter out undefined responses
+      var validResponses = responses.filter(function(r) { return r !== undefined; });
+      
+      if (validResponses.length === 0) {
+        showError('No responses to submit!');
+        return;
+      }
+      
+      console.log('Submitting ' + validResponses.length + ' responses');
+      
+      // Hide current content and show loading
+      document.getElementById('questions-section').style.display = 'none';
+      document.getElementById('continue-choice').classList.remove('active');
+      
+      var container = document.querySelector('.container');
+      var loadingDiv = document.createElement('div');
+      loadingDiv.id = 'loading-message';
+      loadingDiv.innerHTML = '<h2>⏳ Submitting your responses...</h2><p>Please wait a moment...</p>';
+      container.appendChild(loadingDiv);
+      
+      // Submit to Google Apps Script
+      google.script.run
+        .withSuccessHandler(function(result) {
+          var loading = document.getElementById('loading-message');
+          if (loading) loading.remove();
+          
+          if (result.success) {
+            document.getElementById('thank-you').classList.add('active');
+          } else {
+            showError('Submission failed: ' + result.message);
+            document.getElementById('questions-section').style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(error) {
+          var loading = document.getElementById('loading-message');
+          if (loading) loading.remove();
+          
+          showError('Submission failed: ' + error.message);
+          document.getElementById('questions-section').style.display = 'block';
+        })
+        .saveResponse(validResponses);
+    }
+
+    function showError(message) {
+      var errorDiv = document.getElementById('error');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+      
+      // Scroll to error
+      errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function clearError() {
+      var errorDiv = document.getElementById('error');
+      errorDiv.textContent = '';
+      errorDiv.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
